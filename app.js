@@ -55,6 +55,14 @@ app.get('/script.js', function(req, res) {
   });
 });
 
+app.get('/ng-socket-io.js', function(req, res) {
+    fs.readFile('ng-socket-io.js',function (err, data){
+        res.writeHead(200, {'Content-Type': 'text/html','Content-Length':data.length});
+        res.write(data);
+        res.end();
+    });
+});
+
 var updateState = function () {
     io.sockets.send("currentState: " + currentState);
 };
