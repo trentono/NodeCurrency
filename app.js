@@ -1,5 +1,6 @@
 var express = require('express'),
     app = express(),
+    httpQ = require('q-io/http'),
     http = require('http'),
     server = http.createServer(app),
     io = require('socket.io').listen(server);
@@ -13,22 +14,36 @@ var options = {
     method: 'GET'
 };
 
+var trueCount = 0,
+    falseCount = 0;
+
 // Use promises you noob
 var callback = function(response) {
     var str = ''
+
+
     response.on('data', function (chunk) {
         str += chunk;
     });
 
     response.on('end', function () {
-        console.log(str);
+        if (str === "true") {
+            trueCount++;
+        } else {
+            falseCount++;
+        }
+        console.log('Ratio: ' + trueCount/falseCount + " TrueCount: " + trueCount + " FalseCount: " + falseCount);
     });
 }
+
+/*httpQ.request("http://10.194.142.32:8080/trimBatchWeb/dataCurrency").then(function (response) {
+    console.log(response);
+})*/
 
 setInterval(function () {
     var req = http.request(options, callback);
     req.end();
-}, 2000);
+}, 200);
 
 
 
