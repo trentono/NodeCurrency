@@ -14,8 +14,7 @@ var options = {
     method: 'GET'
 };
 
-var trueCount = 0,
-    falseCount = 0;
+var currentState = false;
 
 // Use promises you noob
 var callback = function(response) {
@@ -27,10 +26,10 @@ var callback = function(response) {
     });
 
     response.on('end', function () {
-        if (str === "true") {
-            trueCount++;
-        } else {
-            falseCount++;
+        currentState = (str ==="true");
+
+        if (currentState) {
+            updateState();
         }
     });
 }
@@ -56,10 +55,12 @@ app.get('/script.js', function(req, res) {
   });
 });
 
+var updateState = function () {
+    io.sockets.send("currentState: " + currentState);
+};
+
 io.sockets.on('connection', function (socket) {
-    socket.on('message', function(msg) {
-        console.log(msg);
-    });
+
 });
 
 server.listen(8000);
