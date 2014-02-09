@@ -1,9 +1,9 @@
 var express = require('express'),
     app = express(),
-    httpQ = require('q-io/http'),
     http = require('http'),
     server = http.createServer(app),
-    io = require('socket.io').listen(server);
+    io = require('socket.io').listen(server),
+    fs = require('fs');
 
 var options = {
     host: '10.194.142.32',
@@ -32,37 +32,28 @@ var callback = function(response) {
         } else {
             falseCount++;
         }
-        console.log('Ratio: ' + trueCount/falseCount + " TrueCount: " + trueCount + " FalseCount: " + falseCount);
     });
 }
-
-/*httpQ.request("http://10.194.142.32:8080/trimBatchWeb/dataCurrency").then(function (response) {
-    console.log(response);
-})*/
 
 setInterval(function () {
     var req = http.request(options, callback);
     req.end();
 }, 200);
 
+app.get('/index.html', function(req, res) {
+  fs.readFile('index.html',function (err, data){
+    res.writeHead(200, {'Content-Type': 'text/html','Content-Length':data.length});
+    res.write(data);
+    res.end();
+  });
+});
 
-
-app.get('/', function(req, res) {
-    res.send('<!doctype html> \
-            <html> \
-            <head><meta charset="utf-8"></head> \
-            <body> \
-                 <center>Welcome to <strong>socket.io</strong></center> \
-                 <script src="/socket.io/socket.io.js"></script> \
-                 <script> \
-                    var socket = io.connect(); \
-                    socket.emit("message", "Howdy"); \
-                    setInterval(function () { \
-                        socket.emit("message", "Ping"); \
-                    }, 1000); \
-                 </script> \
-            </body> \
-            </html>');
+app.get('/script.js', function(req, res) {
+  fs.readFile('script.js',function (err, data){
+    res.writeHead(200, {'Content-Type': 'text/html','Content-Length':data.length});
+    res.write(data);
+    res.end();
+  });
 });
 
 io.sockets.on('connection', function (socket) {
