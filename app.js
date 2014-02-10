@@ -14,18 +14,25 @@ var getBaseRequestOptionsPrototype = function()
   return baseRequestOptions;
 };
 
-var dataCache = '';
-var setDataCache = function(_dataCache_)
+
+var dataCache = (function()
 {
-  console.log("setting cache: " + _dataCache_);
-  dataCache = _dataCache_;
-}
+  var _dataCache_ = {};
+  
+  var setDataCache = function(data)
+  {
+    _dataCache_.data = data;
+  }
 
-var options = getBaseRequestOptionsPrototype();
-options.path += '/data';
-options.method = 'GET';
+  var options = getBaseRequestOptionsPrototype();
+  options.path += '/data';
+  options.method = 'GET';
 
-http.request(options, new configurableCallback(setDataCache).callbackFn).end();
+  http.request(options, new configurableCallback(setDataCache).callbackFn).end();
+  
+  return _dataCache_;
+  
+})();
 
 // setInterval(function()
 // {
@@ -35,7 +42,7 @@ http.request(options, new configurableCallback(setDataCache).callbackFn).end();
 io.sockets.on('connection', function(socket)
 {
   console.log("connection");
-  io.sockets.send(dataCache);
+  io.sockets.send(dataCache.data);
 });
 
 // An object to configure an http request callback function.
