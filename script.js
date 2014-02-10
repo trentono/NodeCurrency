@@ -1,6 +1,6 @@
 angular.module('dataCurrency', ['socket-io']);
 
-angular.module('dataCurrency').controller('socketController', ['$scope', '$timeout', 'socket', function($scope, $timeout, socket)
+angular.module('dataCurrency').controller('SocketController', ['$scope', '$timeout', 'socket', function($scope, $timeout, socket)
 {
   $scope.dataObjectsMap = {};
 
