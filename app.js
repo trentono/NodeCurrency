@@ -6,7 +6,7 @@ var express = require('express'),
     fs = require('fs');
 
 var options = {
-    host: '10.194.142.32',
+    host: 'localhost',
     path: '/trimBatchWeb/dataCurrency',
     //since we are listening on a custom port, we need to specify it by hand
     port: '8080',
