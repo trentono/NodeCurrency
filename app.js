@@ -1,74 +1,60 @@
-var express = require('express'),
-    app = express(),
-    http = require('http'),
-    server = http.createServer(app),
-    io = require('socket.io').listen(server),
-    fs = require('fs');
+var express = require('express'), app = express(), http = require('http'), server = http.createServer(app), io = require('socket.io').listen(server), fs = require('fs'), resource = require('./resource');
 
-var options = {
+resource.add(app, '/index.html', 'index.html');
+resource.add(app, '/script.js', 'script.js');
+resource.add(app, '/ng-socket-io.js', 'ng-socket-io.js');
+
+var getBaseRequestOptionsPrototype = function()
+{
+  var baseRequestOptions = {
     host: 'localhost',
     path: '/trimBatchWeb/dataCurrency',
-    //since we are listening on a custom port, we need to specify it by hand
     port: '8080',
-    //This is what changes the request to a POST request
-    method: 'GET'
+  };
+  return baseRequestOptions;
 };
 
-var currentState = false;
 
-// Use promises you noob
-var callback = function(response) {
-    var str = ''
+// setInterval(function()
+// {
+
+// }, 2000);
 
 
-    response.on('data', function (chunk) {
-        str += chunk;
+io.sockets.on('connection', function(socket)
+{
+  var options = getBaseRequestOptionsPrototype();
+  options.path += '/data';
+  options.method = 'GET';
+
+  var req = http.request(options, new configurableCallback().callbackFn).end();
+});
+
+// An object to configure an http request callback function.
+// Will default to simply sending the data back on the sockets.
+function configurableCallback(endFn)
+{
+  this.callbackFn = function(response)
+  {
+    var data = '';
+    response.on('data', function(chunk)
+    {
+      data += chunk;
     });
 
-    response.on('end', function () {
-        currentState = (str ==="true");
-
-        if (currentState) {
-            updateState();
+    if (endFn === undefined)
+    {
+      endFn = function()
+      {
+        if (data)
+        {
+          io.sockets.send(data);
         }
-    });
+      };
+    }
+
+    response.on('end', endFn);
+  }
 }
-
-setInterval(function () {
-    var req = http.request(options, callback);
-    req.end();
-}, 200);
-
-app.get('/index.html', function(req, res) {
-  fs.readFile('index.html',function (err, data){
-    res.writeHead(200, {'Content-Type': 'text/html','Content-Length':data.length});
-    res.write(data);
-    res.end();
-  });
-});
-
-app.get('/script.js', function(req, res) {
-  fs.readFile('script.js',function (err, data){
-    res.writeHead(200, {'Content-Type': 'text/html','Content-Length':data.length});
-    res.write(data);
-    res.end();
-  });
-});
-
-app.get('/ng-socket-io.js', function(req, res) {
-    fs.readFile('ng-socket-io.js',function (err, data){
-        res.writeHead(200, {'Content-Type': 'text/html','Content-Length':data.length});
-        res.write(data);
-        res.end();
-    });
-});
-
-var updateState = function () {
-    io.sockets.send("currentState: " + currentState);
-};
-
-io.sockets.on('connection', function (socket) {
-
-});
 
 server.listen(8000);
