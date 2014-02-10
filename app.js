@@ -9,30 +9,38 @@ var getBaseRequestOptionsPrototype = function()
   var baseRequestOptions = {
     host: 'localhost',
     path: '/trimBatchWeb/dataCurrency',
-    port: '8080',
+    port: '8080'
   };
   return baseRequestOptions;
 };
 
+var dataCache = '';
+var setDataCache = function(_dataCache_)
+{
+  console.log("setting cache: " + _dataCache_);
+  dataCache = _dataCache_;
+}
+
+var options = getBaseRequestOptionsPrototype();
+options.path += '/data';
+options.method = 'GET';
+
+http.request(options, new configurableCallback(setDataCache).callbackFn).end();
 
 // setInterval(function()
 // {
 
 // }, 2000);
 
-
 io.sockets.on('connection', function(socket)
 {
-  var options = getBaseRequestOptionsPrototype();
-  options.path += '/data';
-  options.method = 'GET';
-
-  var req = http.request(options, new configurableCallback().callbackFn).end();
+  console.log("connection");
+  io.sockets.send(dataCache);
 });
 
 // An object to configure an http request callback function.
 // Will default to simply sending the data back on the sockets.
-function configurableCallback(endFn)
+function configurableCallback(callOnEnd)
 {
   this.callbackFn = function(response)
   {
@@ -42,18 +50,21 @@ function configurableCallback(endFn)
       data += chunk;
     });
 
-    if (endFn === undefined)
+    if (callOnEnd === undefined)
     {
-      endFn = function()
+      callOnEnd = function(data)
       {
-        if (data)
-        {
-          io.sockets.send(data);
-        }
-      };
+        io.sockets.send(data);
+      }
     }
 
-    response.on('end', endFn);
+    response.on('end', function()
+    {
+      if (data)
+      {
+        callOnEnd(data);
+      }
+    });
   }
 }
 
