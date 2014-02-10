@@ -19,7 +19,7 @@ var dataCache = (function()
 
   http.request(options, new requestUtils.configurableCallback(setDataCache).callbackFn).end();
 
-  return _dataCache_;
+  return eval(_dataCache_);
 
 })();
 
@@ -30,7 +30,6 @@ var dataCache = (function()
 
 io.sockets.on('connection', function(socket)
 {
-  console.log("connection");
   io.sockets.send(dataCache.data);
 });
 
