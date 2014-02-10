@@ -2,21 +2,16 @@ angular.module('dataCurrency', ['socket-io']);
 
 angular.module('dataCurrency').controller('socketController', ['$scope', '$timeout', 'socket', function($scope, $timeout, socket)
 {
-  $scope.status = "Listening..."
-  $scope.messages = [];
+  $scope.dataObjectsMap = {};
 
-  socket.on("message", function(msg)
+  socket.on("message", function(data)
   {
-    $scope.status = "Received Message: " + msg;
-    $timeout(function()
-    {
-      $scope.status = "Listening...";
-    }, 1000);
+      $scope.dataObjectsMap = angular.fromJson(data);
   });
 
   socket.on("init", function(data)
   {
-      console.log(data);
+      $scope.dataObjectsMap = angular.fromJson(data);
   });
 
 }]);

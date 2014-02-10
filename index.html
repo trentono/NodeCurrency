@@ -8,8 +8,11 @@
     <script src="script.js"></script>
   </head>
 
-  <body data-ng-controller="socketController">
-    {{status}}
+  <body style="padding: 10px" data-ng-controller="socketController">
+  	<div style="width: 15%; clear: both" data-ng-repeat="dataObjectMapEntry in dataObjectsMap">
+  		<div style="float: left;">{{dataObjectMapEntry.data}}</div>
+  		<div style="float: right;">{{dataObjectMapEntry.formattedDate}}</div>
+  	</div>
   </body>
 
 </html>
