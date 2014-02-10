@@ -19,7 +19,7 @@ var dataCache = (function()
 
   http.request(options, new requestUtils.configurableCallback(setDataCache).callbackFn).end();
 
-  return eval(_dataCache_);
+  return JSON.parse(_dataCache_);
 
 })();
 
