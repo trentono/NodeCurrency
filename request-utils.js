@@ -10,17 +10,9 @@ module.exports = {
         data += chunk;
       });
 
-      if (callOnEnd === undefined)
-      {
-        callOnEnd = function(data)
-        {
-          console.log("No handler for response data");
-        }
-      }
-
       response.on('end', function()
       {
-        if (data)
+        if (data && (typeof callOnEnd === 'function'))
         {
           callOnEnd(data);
         }
