@@ -5,13 +5,16 @@
     <script data-require="angular.js@*" data-semver="1.2.12" src="http://code.angularjs.org/1.2.12/angular.js"></script>
     <script data-require="socket.io@*" data-semver="0.9.6" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.6/socket.io.min.js"></script>
     <script type="text/javascript" src="ng-socket-io.js"></script>
+    <link data-require="bootstrap-css@2.3.2" data-semver="2.3.2" rel="stylesheet" href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" />
     <script src="script.js"></script>
+    
   </head>
 
-  <body style="padding: 10px" data-ng-controller="SocketController">
-  	<div style="width: 15%; clear: both" data-ng-repeat="dataObjectMapEntry in dataObjectsMap">
-  		<div style="float: left;">{{dataObjectMapEntry.data}}</div>
-  		<div style="float: right;">{{dataObjectMapEntry.formattedDate}}</div>
+  <body data-ng-controller="SocketController" >
+    <div class="container">
+  		<div class="row" data-ng-repeat="dataObjectRow in dataObjectRows">
+  			<div data-ng-class="{'text-warning' : dataObject.updated}" class="span3" data-ng-repeat="dataObject in dataObjectRow">{{dataObject.modifiedDate | date:'mediumTime' }} -- {{dataObject.data}}</div>	
+  		</div>
   	</div>
   </body>
 

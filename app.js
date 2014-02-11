@@ -1,4 +1,4 @@
-var express = require('express'), app = express(), http = require('http'), server = http.createServer(app), io = require('socket.io').listen(server), fs = require('fs'), resource = require('./resource'), requestUtils = require('./request-utils');
+var express = require('express'), app = express(), http = require('http'), server = http.createServer(app), io = require('socket.io').listen(server), fs = require('fs'), extend = require('util')._extend, resource = require('./resource'), requestUtils = require('./request-utils');
 
 resource.add(app, '/index.html', 'index.html');
 resource.add(app, '/script.js', 'script.js');
@@ -24,40 +24,42 @@ var dataCache = (function()
 })();
 
 // Randomly swap the data values of two objects and save.
+// Note that we are extending dataCache objects, so the cache remains
+// intentionally out of sync with the server
 setInterval(function()
 {
-  var recordOne = Math.floor(Math.random() * 50);
-  var recordTwo = Math.floor(Math.random() * 50);
+  var dataObjectOne = extend({}, dataCache.data[Math.floor(Math.random() * 50)]);
+  var dataObjectTwo = extend({}, dataCache.data[Math.floor(Math.random() * 50)]);
 
-  var tempData = dataCache.data[recordOne].data;
-  dataCache.data[recordOne].data = dataCache.data[recordTwo].data;
-  dataCache.data[recordTwo].data = tempData;
+  var tempData = dataObjectOne.data;
+  dataObjectOne.data = dataObjectTwo.data;
+  dataObjectTwo.data = tempData;
 
-  var recordOneBody = JSON.stringify(dataCache.data[recordOne]);
-  var recordTwoBody = JSON.stringify(dataCache.data[recordTwo]);
+  var dataObjectOneBody = JSON.stringify(dataObjectOne);
+  var dataObjectTwoBody = JSON.stringify(dataObjectTwo);
 
   var options = requestUtils.getBaseRequestOptions();
   options.path += '/data/';
   options.method = 'PUT';
   options.headers = {
-    'Content-Type': 'application/json',
-    'Content-Length': Buffer.byteLength(recordOneBody)
+    'Content-Type': 'application/json'
   };
 
-  http.request(options, new requestUtils.configurableCallback().callbackFn).end(recordOneBody);
+  options.headers['Content-Length'] = Buffer.byteLength(dataObjectOneBody);
+  http.request(options, new requestUtils.configurableCallback().callbackFn).end(dataObjectOneBody);
 
-  options.headers['Content-Length'] = Buffer.byteLength(recordTwoBody);
-  http.request(options, new requestUtils.configurableCallback().callbackFn).end(recordTwoBody);
+  options.headers['Content-Length'] = Buffer.byteLength(dataObjectTwoBody);
+  http.request(options, new requestUtils.configurableCallback().callbackFn).end(dataObjectTwoBody);
 
 }, 2000);
 
-// Check for updates to the data
+// Poll for updates to the data
 setInterval(function()
 {
 
   var dataObjectArray = [];
 
-  for (key in dataCache.data)
+  for (var key in dataCache.data)
   {
     dataObjectArray.push(dataCache.data[key]);
   }
@@ -72,19 +74,35 @@ setInterval(function()
     'Content-Length': Buffer.byteLength(body)
   };
 
-  var logger = function(data)
+  // Define callback function to reload data
+  var updateRecords = function(data)
   {
-    console.log('Dirty Ids: ' + data)
+    var dataArray = JSON.parse(data);
+
+    var updateCacheAndNotify = function(data)
+    {
+      var dataObject = JSON.parse(data);
+      dataCache.data[dataObject.id] = dataObject;
+      io.sockets.emit('dataCacheUpdate', dataObject);
+    }
+
+    for ( var i = 0; i < dataArray.length; i++)
+    {
+      var options = requestUtils.getBaseRequestOptions();
+      options.method = 'GET';
+      options.path += "/data/" + dataArray[i];
+      http.request(options, new requestUtils.configurableCallback(updateCacheAndNotify).callbackFn).end();
+    }
   };
 
-  http.request(options, new requestUtils.configurableCallback(logger).callbackFn).end(body);
+  http.request(options, new requestUtils.configurableCallback(updateRecords).callbackFn).end(body);
 
 }, 5000);
 
-// Configure sockets
+// Pass the current dataCache to each client on connect.
 io.sockets.on('connection', function(socket)
 {
-  io.sockets.send(dataCache.data);
+  io.sockets.emit('init', dataCache.data);
 });
 
 server.listen(8000);
