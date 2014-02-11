@@ -1,4 +1,4 @@
-var express = require('express'), app = express(), http = require('http'), server = http.createServer(app), io = require('socket.io').listen(server), fs = require('fs'), extend = require('util')._extend, resource = require('./resource'), requestUtils = require('./request-utils');
+var express = require('express'), app = express(), http = require('http'), server = http.createServer(app), io = require('socket.io').listen(server, {log: false} ), fs = require('fs'), extend = require('util')._extend, resource = require('./resource'), requestUtils = require('./request-utils');
 
 resource.add(app, '/index.html', 'index.html');
 resource.add(app, '/script.js', 'script.js');
@@ -106,4 +106,4 @@ io.sockets.on('connection', function(socket)
   io.sockets.emit('init', dataCache.data);
 });
 
-server.listen(8000);
+server.listen(8000, "0.0.0.0");
