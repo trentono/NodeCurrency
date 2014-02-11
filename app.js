@@ -23,21 +23,63 @@ var dataCache = (function()
 
 })();
 
-// Randomly update an object
+// Randomly swap the data values of two objects and save.
 setInterval(function()
 {
-  var record = Math.floor(Math.random() * 50);
-  var body = JSON.stringify(dataCache.data[record]);
+  var recordOne = Math.floor(Math.random() * 50);
+  var recordTwo = Math.floor(Math.random() * 50);
+
+  var tempData = dataCache.data[recordOne].data;
+  dataCache.data[recordOne].data = dataCache.data[recordTwo].data;
+  dataCache.data[recordTwo].data = tempData;
+
+  var recordOneBody = JSON.stringify(dataCache.data[recordOne]);
+  var recordTwoBody = JSON.stringify(dataCache.data[recordTwo]);
+
   var options = requestUtils.getBaseRequestOptions();
   options.path += '/data/';
   options.method = 'PUT';
   options.headers = {
     'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(recordOneBody)
+  };
+
+  http.request(options, new requestUtils.configurableCallback().callbackFn).end(recordOneBody);
+
+  options.headers['Content-Length'] = Buffer.byteLength(recordTwoBody);
+  http.request(options, new requestUtils.configurableCallback().callbackFn).end(recordTwoBody);
+
+}, 2000);
+
+// Check for updates to the data
+setInterval(function()
+{
+
+  var dataObjectArray = [];
+
+  for (key in dataCache.data)
+  {
+    dataObjectArray.push(dataCache.data[key]);
+  }
+
+  var body = JSON.stringify(dataObjectArray);
+
+  var options = requestUtils.getBaseRequestOptions();
+  options.path += '/operations/checkDataCurrency/';
+  options.method = 'POST';
+  options.headers = {
+    'Content-Type': 'application/json',
     'Content-Length': Buffer.byteLength(body)
   };
-  var request = http.request(options, new requestUtils.configurableCallback(logger).callbackFn);
-  request.end(body);
-}, 2000);
+
+  var logger = function(data)
+  {
+    console.log('Dirty Ids: ' + data)
+  };
+
+  http.request(options, new requestUtils.configurableCallback(logger).callbackFn).end(body);
+
+}, 5000);
 
 // Configure sockets
 io.sockets.on('connection', function(socket)
