@@ -10,7 +10,7 @@ var dataCache = (function()
 
   var setDataCache = function(data)
   {
-    _dataCache_.data = data;
+    _dataCache_.data = JSON.parse(data);
   }
 
   var options = requestUtils.getBaseRequestOptions();
@@ -19,15 +19,27 @@ var dataCache = (function()
 
   http.request(options, new requestUtils.configurableCallback(setDataCache).callbackFn).end();
 
-  return JSON.parse(_dataCache_);
+  return _dataCache_;
 
 })();
 
-// setInterval(function()
-// {
+// Randomly update an object
+setInterval(function()
+{
+  var record = Math.floor(Math.random() * 50);
+  var body = JSON.stringify(dataCache.data[record]);
+  var options = requestUtils.getBaseRequestOptions();
+  options.path += '/data/';
+  options.method = 'PUT';
+  options.headers = {
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(body)
+  };
+  var request = http.request(options, new requestUtils.configurableCallback(logger).callbackFn);
+  request.end(body);
+}, 2000);
 
-// }, 2000);
-
+// Configure sockets
 io.sockets.on('connection', function(socket)
 {
   io.sockets.send(dataCache.data);
