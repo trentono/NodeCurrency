@@ -2,6 +2,7 @@ var express = require('express'), app = express(), http = require('http'), serve
 
 resource.add(app, '/index.html', 'index.html');
 resource.add(app, '/script.js', 'script.js');
+resource.add(app, '/style.css', 'style.css');
 resource.add(app, '/ng-socket-io.js', 'ng-socket-io.js');
 
 var dataCache = (function()
@@ -28,8 +29,8 @@ var dataCache = (function()
 // intentionally out of sync with the server
 setInterval(function()
 {
-  var dataObjectOne = extend({}, dataCache.data[Math.floor(Math.random() * 50)]);
-  var dataObjectTwo = extend({}, dataCache.data[Math.floor(Math.random() * 50)]);
+  var dataObjectOne = extend({}, dataCache.data[Math.floor(Math.random() * 160)]);
+  var dataObjectTwo = extend({}, dataCache.data[Math.floor(Math.random() * 160)]);
 
   var tempData = dataObjectOne.data;
   dataObjectOne.data = dataObjectTwo.data;

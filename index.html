@@ -7,13 +7,32 @@
     <script type="text/javascript" src="ng-socket-io.js"></script>
     <link data-require="bootstrap-css@2.3.2" data-semver="2.3.2" rel="stylesheet" href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" />
     <script src="script.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    
+    <style>
+    .update-fade {
+   		background-color: white;
+   		transition: background .5s ease-in-out;
+   		-moz-transition: background .5s ease-in-out;
+   		-webkit-transition: background .5s ease-in-out;
+	}
+
+	.update-fade.updated {
+   		background-color: yellow;
+	}
+	
+	body {
+	   padding-top: 20px;
+	}
+    </style>
+    
     
   </head>
 
   <body data-ng-controller="SocketController" >
     <div class="container">
   		<div class="row" data-ng-repeat="dataObjectRow in dataObjectRows">
-  			<div data-ng-class="{'text-warning' : dataObject.updated}" class="span3" data-ng-repeat="dataObject in dataObjectRow">{{dataObject.modifiedDate | date:'mediumTime' }} -- {{dataObject.data}}</div>	
+  			<div data-ng-class="{'updated' : dataObject.updated}" class="span3 update-fade" data-ng-repeat="dataObject in dataObjectRow">{{dataObject.modifiedDate | date:'mediumTime' }} -- {{dataObject.data}}</div>	
   		</div>
   	</div>
   </body>
